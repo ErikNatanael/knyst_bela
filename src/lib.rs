@@ -25,7 +25,7 @@ impl BelaKnystBackend {
             num_outputs,
             block_size,
             sample_rate,
-
+            max_node_inputs: 12,
             ..Default::default()
         });
         let run_graph_settings = RunGraphSettings {
@@ -55,6 +55,10 @@ impl BelaKnystBackend {
     pub fn knyst_commands(&mut self) -> KnystCommands {
         self.controller.get_knyst_commands()
     }
+    /// Run updates for Controller and RunGraph. Non realtime thread safe
+    pub fn update(&mut self) {
+        self.controller.run(500);
+    }
     /// Sets the input of one channel to the graph. Run before `process_block`
     pub fn set_input_channel(&mut self, channel_index: usize, input_channel: &[f32]) {
         let graph_input_buffers = self.run_graph.graph_input_buffers();
@@ -64,7 +68,6 @@ impl BelaKnystBackend {
         }
     }
     pub fn process_block(&mut self) {
-        self.controller.run(500);
         self.run_graph.run_resources_communication(50);
         self.run_graph.process_block();
     }
@@ -95,6 +98,16 @@ pub unsafe extern "C" fn bela_knyst_backend_create(
         num_inputs,
         num_outputs,
     )))
+}
+/// Run updates (non realtime thread safe)
+///
+/// # Safety
+/// Only call with a pointer received from `bela_knyst_backend_create`
+#[no_mangle]
+pub unsafe extern "C" fn bela_knyst_backend_update(bela_knyst_backend_ptr: *mut BelaKnystBackend) {
+    if !bela_knyst_backend_ptr.is_null() {
+        (*bela_knyst_backend_ptr).update();
+    }
 }
 /// Set an input channel. Run before process_block
 ///
