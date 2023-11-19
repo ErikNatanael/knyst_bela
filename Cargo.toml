@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 # knyst = { git = "https://github.com/ErikNatanael/knyst.git", default-features = false }
-knyst = { path = "/home/erik/code/rust/audio/knyst/", default-features = false }
+knyst = { path = "/home/erik/code/rust/audio/knyst/knyst", default-features = false }
 libc = "0.2.147"
+thiserror = "1.0.50"
